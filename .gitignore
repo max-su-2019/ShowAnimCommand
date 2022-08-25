@@ -1,1 +1,4 @@
-!Update.ps1
+build
+.clang-format
+.editorconfig
+.vs

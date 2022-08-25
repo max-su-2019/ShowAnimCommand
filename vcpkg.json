@@ -1,14 +1,12 @@
 {
-    "name":  "showanimcommand",
-    "version-string":  "0.0.1",
-    "description":  "",
-    "license":  "MIT",
-    "dependencies":  [
-                         "spdlog"
-                     ],
-    "features":  {
-                     "mo2-install":  {
-                                         "description":  "Show Animation Command"
-                                     }
-                 }
+  "name": "showanimcommand",
+  "version": "1",
+  "dependencies": [
+    "fast-cpp-csv-parser",
+    "rsm-binary-io",
+    "simpleini",
+    "spdlog",
+    "xbyak",
+    "rapidcsv"
+  ]
 }
