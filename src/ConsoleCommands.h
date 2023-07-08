@@ -20,7 +20,5 @@ namespace ShowAnimCommand
 		static void CPrint(const char* a_fmt, ...);
 
 		static constexpr char _DELIM{ '\t' };
-
-		static bool ReloadConfig();
 	};
 }

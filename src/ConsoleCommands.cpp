@@ -1,9 +1,12 @@
 #include "ConsoleCommands.h"
+#include "OpenAnimationReplacer/API/OpenAnimationReplacerAPI-Animations.h"
 
 namespace ShowAnimCommand
 {
 	bool ConsoleCommands::Exec(const RE::SCRIPT_PARAMETER*, RE::SCRIPT_FUNCTION::ScriptData* a_scriptData, RE::TESObjectREFR* a_thisObj, RE::TESObjectREFR*, RE::Script*, RE::ScriptLocals*, double&, std::uint32_t&)
 	{
+		using namespace OAR_API::Animations;
+
 		auto ToClipGenerator = [](RE::hkbNode* a_node) -> RE::hkbClipGenerator* {
 			constexpr char CLASS_NAME[] = "hkbClipGenerator";
 			if (a_node && a_node->GetClassType()) {
@@ -18,15 +21,24 @@ namespace ShowAnimCommand
 		if (actor) {
 			RE::BSAnimationGraphManagerPtr graphMgr;
 			if (actor->GetAnimationGraphManager(graphMgr) && graphMgr) {
-				auto behaviourGraph = graphMgr->graphs[0] ? graphMgr->graphs[0]->behaviorGraph : nullptr;
+				auto project = graphMgr->graphs[0];
+				auto behaviourGraph = project ? graphMgr->graphs[0]->behaviorGraph : nullptr;
 				auto activeNodes = behaviourGraph ? behaviourGraph->activeNodes : nullptr;
 				if (activeNodes) {
+					CPrint("Behavior Project Name :  \"%s\"", project->projectName.c_str());
+					auto API = GetAPI();
 					for (auto nodeInfo : *activeNodes) {
 						auto nodeClone = nodeInfo.nodeClone;
 						if (nodeClone && nodeClone->GetClassType()) {
 							auto clipGenrator = ToClipGenerator(nodeClone);
 							if (clipGenrator)
-								CPrint("Get an Active Anim: \"%s\", localTime: %f", clipGenrator->animationName, clipGenrator->localTime);
+								if (API) {
+									auto animInfo = API->GetCurrentReplacementAnimationInfo(clipGenrator);
+									const RE::BSString clipPath = animInfo.animationPath.empty() ? clipGenrator->animationName.c_str() : animInfo.animationPath;
+									CPrint("Get an Active Anim: \"%s\", localTime: %f", clipPath.c_str(), clipGenrator->localTime);
+								} else {
+									CPrint("Get an Active Anim: \"%s\", localTime: %f", clipGenrator->animationName, clipGenrator->localTime);
+								}
 						}
 					}
 				}
@@ -48,9 +60,9 @@ namespace ShowAnimCommand
 			info->editorFilter = false;
 			info->invalidatesCellList = false;
 
-			logger::debug("Replace ShowAnim Console Command Successfully!");
+			DEBUG("Replace ShowAnim Console Command Successfully!");
 		} else {
-			logger::error("Fail to Locate ShowAnim Console Command!");
+			ERROR("Fail to Locate ShowAnim Console Command!");
 		}
 	}
 

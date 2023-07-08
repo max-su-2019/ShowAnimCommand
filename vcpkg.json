@@ -1,14 +1,14 @@
 {
-    "name":  "showanimcommand",
-    "version-string":  "1.0.0",
-    "description":  "",
-    "license":  "MIT",
-    "dependencies":  [
-                         "spdlog"
-                     ],
-    "features":  {
-                     "mo2-install":  {
-                                         "description":  "ShowAnimCommand"
-                                     }
-                 }
+  "name": "showanimcommand",
+  "version-string": "1.0.0",
+  "description": "",
+  "license": "MIT",
+  "dependencies": [
+    "spdlog"
+  ],
+  "features": {
+    "mo2-install": {
+      "description": "Show Animation Command"
+    }
+  }
 }
