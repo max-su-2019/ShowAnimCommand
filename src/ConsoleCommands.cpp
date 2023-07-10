@@ -34,7 +34,11 @@ namespace ShowAnimCommand
 							if (clipGenrator)
 								if (API) {
 									auto animInfo = API->GetCurrentReplacementAnimationInfo(clipGenrator);
-									const RE::BSString clipPath = animInfo.animationPath.empty() ? clipGenrator->animationName.c_str() : animInfo.animationPath;
+
+									auto animPath = animInfo.variantFilename.empty() ? std::string(animInfo.animationPath.c_str()) :
+									                                                   std::string(animInfo.animationPath.c_str()) + "\\" + std::string(animInfo.variantFilename.c_str());
+
+									std::string clipPath = animPath.empty() ? clipGenrator->animationName.c_str() : animPath.c_str();
 									CPrint("Get an Active Anim: \"%s\", localTime: %f", clipPath.c_str(), clipGenrator->localTime);
 								} else {
 									CPrint("Get an Active Anim: \"%s\", localTime: %f", clipGenrator->animationName, clipGenrator->localTime);
