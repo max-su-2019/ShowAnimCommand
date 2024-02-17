@@ -8,42 +8,47 @@ namespace ShowAnimCommand
 		using namespace OAR_API::Animations;
 
 		auto ToClipGenerator = [](RE::hkbNode* a_node) -> RE::hkbClipGenerator* {
-			constexpr char CLASS_NAME[] = "hkbClipGenerator";
 			if (a_node && a_node->GetClassType()) {
-				if (_strcmpi(a_node->GetClassType()->name, CLASS_NAME) == 0)
+				if (_strcmpi(a_node->GetClassType()->name, "hkbClipGenerator") == 0)
 					return skyrim_cast<RE::hkbClipGenerator*>(a_node);
+
+				if (_strcmpi(a_node->GetClassType()->name, "BSSynchronizedClipGenerator") == 0) {
+					auto syncClip = skyrim_cast<RE::BSSynchronizedClipGenerator*>(a_node);
+					if (syncClip)
+						return syncClip->clipGenerator;
+				}
 			}
 
 			return nullptr;
 		};
 
-		auto actor = a_thisObj ? a_thisObj->As<RE::Actor>() : nullptr;
-		if (actor) {
+		if (a_thisObj) {
 			RE::BSAnimationGraphManagerPtr graphMgr;
-			if (actor->GetAnimationGraphManager(graphMgr) && graphMgr) {
-				auto project = graphMgr->graphs[0];
-				auto behaviourGraph = project ? graphMgr->graphs[0]->behaviorGraph : nullptr;
-				auto activeNodes = behaviourGraph ? behaviourGraph->activeNodes : nullptr;
-				if (activeNodes) {
-					CPrint("Behavior Project Name :  \"%s\"", project->projectName.c_str());
-					auto API = GetAPI();
-					for (auto nodeInfo : *activeNodes) {
-						auto nodeClone = nodeInfo.nodeClone;
-						if (nodeClone && nodeClone->GetClassType()) {
-							auto clipGenrator = ToClipGenerator(nodeClone);
-							if (clipGenrator)
-								if (API) {
-									auto animInfo = API->GetCurrentReplacementAnimationInfo(clipGenrator);
+			if (a_thisObj->GetAnimationGraphManager(graphMgr) && graphMgr) {
+				for (const auto project : graphMgr->graphs) {
+					auto behaviourGraph = project ? project->behaviorGraph : nullptr;
+					auto activeNodes = behaviourGraph ? behaviourGraph->activeNodes : nullptr;
+					if (activeNodes) {
+						CPrint("Behavior Project Name :  \"%s\"", project->projectName.c_str());
+						auto API = GetAPI();
+						for (auto nodeInfo : *activeNodes) {
+							auto nodeClone = nodeInfo.nodeClone;
+							if (nodeClone && nodeClone->GetClassType()) {
+								auto clipGenrator = ToClipGenerator(nodeClone);
+								if (clipGenrator)
+									if (API) {
+										auto animInfo = API->GetCurrentReplacementAnimationInfo(clipGenrator);
+										auto animPath = animInfo.variantFilename.empty() ? std::string(animInfo.animationPath.c_str()) :
+										                                                   std::string(animInfo.animationPath.c_str()) + "\\" + std::string(animInfo.variantFilename.c_str());
 
-									auto animPath = animInfo.variantFilename.empty() ? std::string(animInfo.animationPath.c_str()) :
-									                                                   std::string(animInfo.animationPath.c_str()) + "\\" + std::string(animInfo.variantFilename.c_str());
-
-									std::string clipPath = animPath.empty() ? clipGenrator->animationName.c_str() : animPath.c_str();
-									CPrint("Get an Active Anim: \"%s\", localTime: %f", clipPath.c_str(), clipGenrator->localTime);
-								} else {
-									CPrint("Get an Active Anim: \"%s\", localTime: %f", clipGenrator->animationName, clipGenrator->localTime);
-								}
+										std::string clipPath = animPath.empty() ? clipGenrator->animationName.c_str() : animPath.c_str();
+										CPrint("Get an Active Anim: \"%s\", localTime: %f", clipPath.c_str(), clipGenrator->localTime);
+									} else {
+										CPrint("Get an Active Anim: \"%s\", localTime: %f", clipGenrator->animationName, clipGenrator->localTime);
+									}
+							}
 						}
+						CPrint("---------------------------------------");
 					}
 				}
 			}
